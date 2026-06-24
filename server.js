@@ -1,10 +1,10 @@
-const { Telegraf, Markup } = require('telegraf');
+const { Telegraf, Markup } = require('telegraf')
 const { createClient } = require('@supabase/supabase-js');
 
-// المفاتيح المباشرة للتشغيل المستقر محلياً
+// المفاتيح المباشرة للتشغيل المستقر محلياً وسحابياً
 const SUPABASE_URL = "https://wrxwkotohlkctltbxpui.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_PfCXKYdU6a2sNI9Jnp3rQg_zboSU_A6";
-const TELEGRAM_BOT_TOKEN = "8013853608:AAHKSLk-mk1VwuvloIx8NkxlZYW36Lff1Wk";
+const TELEGRAM_BOT_TOKEN = process.env.BOT_TOKEN || process.env.TELEGRAM_TOKEN;
 
 // ربط قاعدة البيانات والبوت
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -49,7 +49,7 @@ bot.start(async (ctx) => {
 
 // تشغيل البوت واستقبال البيانات
 bot.launch().then(() => {
-    console.log("🚀 تم تشغيل بوت OBSD بنجاح محلياً وهو جاهز تماماً!");
+    console.log("🚀 تم تشغيل بوت OBSD بنجاح وهو جاهز تماماً!");
 });
 
 // إيقاف آمن عند إغلاق السيرفر
