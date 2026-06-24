@@ -8,7 +8,7 @@ const bot = new Telegraf(process.env.BOT_TOKEN);
 // رابط السيرفر الخاص بك على Render
 const RENDER_URL = 'https://obsidian-genesis-bot-huw2.onrender.com';
 
-// ذاكرة مؤقتة لحفظ أرصدة وأوقات تعدين المستخدمين
+// ذاكرة مؤفتة لحفظ الأرصدة
 const localDatabase = {};
 
 bot.start((ctx) => {
@@ -18,7 +18,7 @@ bot.start((ctx) => {
 const PORT = process.env.PORT || 3000;
 
 const server = http.createServer((req, res) => {
-    // تفعيل الـ CORS لتسمح لموقع Softr بإرسال واستقبال البيانات بدون حظر أمني
+    // إعدادات CORS للسماح لـ Softr بالوصول
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -29,7 +29,7 @@ const server = http.createServer((req, res) => {
         return;
     }
 
-    // 1. مسار جلب بيانات ورصيد المستخدم من تليجرام باستخدام تفكيك النص العادي المضمون
+    // مسار جلب بيانات المستخدم
     if (req.url.startsWith('/api/user') && req.method === 'GET') {
         const queryString = req.url.split('?')[1] || '';
         const params = new URLSearchParams(queryString);
@@ -42,7 +42,7 @@ const server = http.createServer((req, res) => {
         }
 
         if (!localDatabase[userId]) {
-            localDatabase[userId] = { balance: "0.00", lastMininingTime: null, referrals: 0 };
+            localDatabase[userId] = { balance: "0.00", lastMiningTime: null, referrals: 0 };
         }
 
         res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -50,7 +50,7 @@ const server = http.createServer((req, res) => {
         return;
     }
 
-    // 2. مسار تحديث الرصيد عند التعدين
+    // مسار تحديث رصيد التعدين
     if (req.url === '/api/mine' && req.method === 'POST') {
         let body = '';
         req.on('data', chunk => { body += chunk.toString(); });
@@ -64,7 +64,7 @@ const server = http.createServer((req, res) => {
                         localDatabase[userId] = { referrals: 0 };
                     }
                     localDatabase[userId].balance = parseFloat(balance || 0).toFixed(2);
-                    localDatabase[userId].lastMininingTime = new Date().getTime();
+                    localDatabase[userId].lastMiningTime = new Date().getTime();
 
                     res.writeHead(200, { 'Content-Type': 'application/json' });
                     res.end(JSON.stringify({ success: true, data: localDatabase[userId] }));
@@ -74,13 +74,13 @@ const server = http.createServer((req, res) => {
                 }
             } catch (e) {
                 res.writeHead(400, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ error: 'Invalid JSON body' }));
+                res.end(JSON.stringify({ error: 'Invalid JSON' }));
             }
         });
         return;
     }
 
-    // ربط طلبات تليجرام بالـ Webhook
+    // مسار تليجرام الـ Webhook
     if (req.url === `/bot${process.env.BOT_TOKEN}`) {
         let body = '';
         req.on('data', chunk => { body += chunk.toString(); });
@@ -101,7 +101,6 @@ const server = http.createServer((req, res) => {
     res.end('OBSD Bot Web Service with Mining API is Running...\n');
 });
 
-// تشغيل السيرفر وتفعيل الـ Webhook
 server.listen(PORT, '0.0.0.0', async () => {
     console.log(`🚀 Web server is listening on port ${PORT}`);
     try {
