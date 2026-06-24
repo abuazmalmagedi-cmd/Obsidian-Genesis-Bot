@@ -54,4 +54,12 @@ bot.launch().then(() => {
 
 // إيقاف آمن عند إغلاق السيرفر
 process.once('SIGINT', () => bot.stop('SIGINT'));
-process.once('SIGTERM', () => bot.stop('SIGTERM'));
+process.once('SIGTERM', () => bot.stop('SIGTERM'));// خادم وهمي لحل مشكلة الـ Port في Render ومنع إيقاف البوت
+const http = require('http');
+const PORT = process.env.PORT || 3000;
+http.createServer((req, res) => {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end('OBSD Bot is Running...\n');
+}).listen(PORT, () => {
+    console.log(`📡 Web server is listening on port ${PORT}`);
+});
