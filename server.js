@@ -43,5 +43,17 @@ bot.action('view_stats', async (ctx) => {
     if (error) return ctx.reply('حدث خطأ في جلب البيانات');
     ctx.reply(`📊 إجمالي عدد المستخدمين المسجلين: ${count}`);
 });
-
+// استقبال القيمة الجديدة من الأدمن وحفظها
+bot.on('text', async (ctx) => {
+    const text = ctx.message.text;
+    // التحقق إذا كانت الرسالة رقماً
+    if (!isNaN(text) && ctx.from.id === ADMIN_ID) {
+        const { error } = await supabase.from('settings').update({ task_reward: parseFloat(text) }).eq('id', 1);
+        if (!error) {
+            ctx.reply(`✅ تم اعتماد القيمة الجديدة للمكافأة: ${text}`);
+        } else {
+            ctx.reply('❌ حدث خطأ أثناء التحديث.');
+        }
+    }
+});
 bot.launch();
