@@ -49,6 +49,8 @@ bot.command('admin', async (ctx) => {
 bot.action('stats_view', async (ctx) => {
     const { count } = await supabase.from('users').select('*', { count: 'exact' });
     ctx.reply(`📊 عدد المستخدمين المسجلين: ${count}`);
+});bot.hears('id', (ctx) => {
+    ctx.reply(`رقم الـ ID الخاص بك هو: ${ctx.from.id}`);
 });
 
 bot.launch();
