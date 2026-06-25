@@ -8,7 +8,20 @@ const ADMIN_ID = 8372337964;
 
 // خادم للحفاظ على تشغيل البوت
 http.createServer((req, res) => res.end('Bot Active')).listen(10000);
+bot.start(async (ctx) => {
+    const userId = ctx.from.id;
+    const userName = ctx.from.first_name;
 
+    // محاولة تسجيل المستخدم في قاعدة البيانات
+    const { data, error } = await supabase.from('users').upsert([
+        { telegram_id: userId, username: userName, balance: 0 }
+    ], { onConflict: 'telegram_id' });
+
+    ctx.reply('مرحباً بك في Obsidian Genesis!', Markup.inlineKeyboard([
+        [Markup.button.callback('⛏ تعدين $OBSD', 'mine_menu')],
+        [Markup.button.url('🛒 شراء $OBSD', 'https://dapp.quickswap.exchange/swap?type=best&from=ETH&to=0x2a2C206aC686eDD7D5b8Cf1cf325dE5261cD446F')]
+    ]));
+});
 // دالة لجلب مكافأة المهمة الحالية من قاعدة البيانات
 async function getTaskReward() {
     const { data, error } = await supabase.from('settings').select('task_reward').single();
