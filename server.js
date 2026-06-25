@@ -30,6 +30,18 @@ bot.action('task_twitter', async (ctx) => {
     const reward = await getTaskReward(); // جلب القيمة ديناميكياً
     // ... هنا نضع منطق التسجيل (recordAction) ...
     ctx.answerCbQuery(`تمت المهمة! حصلت على ${reward} $OBSD`);
+});// معالج زر تعديل المكافأة
+bot.action('edit_reward', (ctx) => {
+    ctx.answerCbQuery();
+    ctx.reply('يرجى إرسال القيمة الجديدة للمكافأة كرقم فقط (مثلاً: 0.10)');
+});
+
+// معالج زر الإحصائيات
+bot.action('view_stats', async (ctx) => {
+    ctx.answerCbQuery();
+    const { count, error } = await supabase.from('users').select('*', { count: 'exact' });
+    if (error) return ctx.reply('حدث خطأ في جلب البيانات');
+    ctx.reply(`📊 إجمالي عدد المستخدمين المسجلين: ${count}`);
 });
 
 bot.launch();
