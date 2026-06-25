@@ -33,6 +33,22 @@ bot.start(async (ctx) => {
         [Markup.button.callback('⛏ تعدين $OBSD', 'mine_menu')],
         [Markup.button.url('🛒 شراء $OBSD', 'https://dapp.quickswap.exchange/swap?type=best&from=ETH&to=0x2a2C206aC686eDD7D5b8Cf1cf325dE5261cD446F')]
     ]));
+});// إضافة لوحة تحكم الأدمن
+bot.command('admin', async (ctx) => {
+    const adminId = 'ضع_رقم_الـ_ID_الخاص_بك_هنا'; // ضع رقم الـ ID الخاص بك هنا
+    if (ctx.from.id.toString() !== adminId) return;
+
+    ctx.reply('مرحباً بك يا أدمن في لوحة التحكم:', Markup.inlineKeyboard([
+        [Markup.button.callback('⚙️ تعديل مكافأة المهام', 'edit_reward')],
+        [Markup.button.callback('📅 تغيير مدة العقود', 'edit_duration')],
+        [Markup.button.callback('📊 إحصائيات المشروع', 'stats_view')]
+    ]));
+});
+
+// مثال: معالجة زر إحصائيات المشروع
+bot.action('stats_view', async (ctx) => {
+    const { count } = await supabase.from('users').select('*', { count: 'exact' });
+    ctx.reply(`📊 عدد المستخدمين المسجلين: ${count}`);
 });
 
 bot.launch();
