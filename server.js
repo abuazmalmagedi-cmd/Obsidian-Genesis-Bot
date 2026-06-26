@@ -8,13 +8,14 @@ const ADMIN_ID = 8372337964;
 
 http.createServer((req, res) => res.end('Bot Active')).listen(10000);
 
+// الروابط المحدثة
 const taskLinks = {
     'task_group': 'https://t.me/OBSD_Vault',
-    'task_follow': 'https://x.com/@ObsdVault',
-    'task_like': 'https://x.com/@ObsdVault',
-    'task_retweet': 'https://x.com/@ObsdVault',
-    'task_reply': 'https://x.com/@ObsdVault',
-    'task_referral': 'https://t.me/ObsidianGenesisBot'
+    'task_follow': 'https://x.com/ObsdVault',
+    'task_like': 'https://x.com/ObsdVault',
+    'task_retweet': 'https://x.com/ObsdVault',
+    'task_reply': 'https://x.com/ObsdVault',
+    'task_referral': 'https://t.me/OBSD_mining_bot/app'
 };
 
 async function getTaskReward() {
@@ -38,15 +39,24 @@ bot.start(async (ctx) => {
     ]));
 });
 
-// المعالج الوحيد للمهام (تم تنظيفه)
+// معالج المهام المحدث لفتح الروابط مباشرة
 bot.action(/task_/, async (ctx) => {
     const taskType = ctx.match.input;
-    const link = taskLinks[taskType] || 'https://x.com/@ObsdVault';
-
+    const link = taskLinks[taskType] || 'https://t.me/OBSD_mining_bot/app';
+    
     await ctx.answerCbQuery();
-    ctx.reply(`🚀 اضغط على الزر أدناه لتنفيذ المهمة:`, 
-    Markup.inlineKeyboard([
-        [Markup.button.url('🔗 تنفيذ المهمة الآن', link)],
+
+    let buttonText = '🔗 تنفيذ المهمة الآن';
+    let messageText = `🚀 اضغط على الزر أدناه لتنفيذ المهمة:`;
+
+    // تعديل نص رابط الإحالات
+    if (taskType === 'task_referral') {
+        messageText = `💰 انضم الى بوت تعدين OBSD السهل وحقق اكثر من 700 دولار شهريا\nJoin the easy OBSD mining bot and earn over $700 monthly!`;
+        buttonText = '🚀 ابدأ التعدين الآن';
+    }
+
+    ctx.reply(messageText, Markup.inlineKeyboard([
+        [Markup.button.url(buttonText, link)],
         [Markup.button.callback('✅ تم التنفيذ (تحقق)', `verify_${taskType}`)]
     ]));
 });
@@ -69,7 +79,7 @@ bot.action(/verify_task_/, async (ctx) => {
     }).eq('telegram_id', userId);
 
     ctx.answerCbQuery(`تمت الإضافة!`);
-    ctx.reply(`✅ تم التحقق! أضفنا ${reward} $OBSD لرصيدك.`);
+    ctx.reply(`✅ تم التحقق بنجاح! تم إضافة ${reward} $OBSD لرصيدك.`);
 });
 
 bot.launch();
