@@ -51,6 +51,27 @@ bot.on('text', async (ctx) => {
         await supabase.from('settings').update({ task_reward: parseFloat(ctx.message.text) }).eq('id', 1);
         ctx.reply(`✅ تم تحديث المكافأة إلى: ${ctx.message.text}`);
     }
+});bot.action('task_referral', async (ctx) => {
+    const userId = ctx.from.id;
+
+    // 1. تحقق: هل أتم المستخدم هذه المهمة من قبل؟
+    const { data: user } = await supabase.from('users').select('tasks_completed').eq('telegram_id', userId).single();
+    
+    // تأكد أن tasks_completed عبارة عن مصفوفة (Array)
+    let tasks = user.tasks_completed || [];
+    
+    if (tasks.includes('task_referral')) {
+        return ctx.answerCbQuery('لقد أتممت هذه المهمة مسبقاً!');
+    }
+
+    // 2. إذا لم يقم بها، أضف الرصيد وسجل المهمة
+    await supabase.from('users').update({ 
+        balance: user.balance + 0.05,
+        tasks_completed: [...tasks, 'task_referral'] 
+    }).eq('telegram_id', userId);
+
+    ctx.answerCbQuery('تم إضافة 0.05$ لرصيدك!');
+    ctx.reply('تم بنجاح! الرصيد مضاف.');
 });
 
 bot.launch();
