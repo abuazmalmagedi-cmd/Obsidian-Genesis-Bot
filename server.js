@@ -1,31 +1,29 @@
 const { createClient } = require('@supabase/supabase-js');
 const { Telegraf, Markup } = require('telegraf');
 
-// التأكد من أن المتغيرات مقروءة من Render
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
 const taskLinks = {
     'task_group': 'https://t.me/OBSD_Vault',
     'task_follow': 'https://x.com/ObsdVault',
-    'task_referral': 'https://t.me/OBSD_mining_bot/app'
+    'task_referral': 'https://t.me/share/url?url=https://t.me/YourBotUsername'
 };
 
-// 1. معالج رسالة البداية
+// 1. معالج رسالة البداية (تصحيح الروابط)
 bot.start((ctx) => {
     ctx.reply('مرحباً بك في Obsidian Genesis! اختر مهمة من القائمة أدناه:', Markup.inlineKeyboard([
-        [Markup.button.callback('📢 انضمام للمجموعة', https://t.me/OBSD_Vault)],
-        [Markup.button.callback('🐦 https:'https://x.com/ObsdVault')],
-        [Markup.button.callback('👥 نظام الإحالات 'https://t.me/share/url?url=https://t.me/YourBotUsername')]
+        [Markup.button.url('📢 انضمام للمجموعة', taskLinks['task_group'])],
+        [Markup.button.url('🐦 متابعة X', taskLinks['task_follow'])],
+        [Markup.button.url('👥 نظام الإحالات', taskLinks['task_referral'])]
     ]));
 });
 
-// 2. معالج المهام (تم تصحيح الأقواس هنا لضمان عدم وجود أخطاء في السطر 57)
+// 2. معالج المهام (يعمل في الخلفية عند الحاجة)
 bot.action(/task_/, async (ctx) => {
     try {
-        const taskType = ctx.match[0]; // تم تعديلها لتكون أكثر دقة
+        const taskType = ctx.match[0];
         const telegram_id = ctx.from.id;
-        const link = taskLinks[taskType] || taskLinks['task_referral'];
 
         // تسجيل البيانات في Supabase
         await supabase.from('users').upsert({ 
@@ -39,15 +37,9 @@ bot.action(/task_/, async (ctx) => {
             reward_amount: 0.5 
         });
 
-        // الرد بزر فتح الرابط
-        await ctx.reply('🚀 اضغط الزر أدناه لتنفيذ المهمة:', Markup.inlineKeyboard([
-            [Markup.button.url('🔗 تنفيذ المهمة الآن', link)]
-        ]));
-
-        await ctx.answerCbQuery();
+        await ctx.answerCbQuery('تم تسجيل محاولتك!');
     } catch (err) {
         console.error("خطأ في تنفيذ المهمة:", err);
-        ctx.reply('حدث خطأ في النظام، يرجى المحاولة لاحقاً.');
     }
 });
 
@@ -61,19 +53,10 @@ bot.command('status', async (ctx) => {
             .eq('is_active', true);
             
         if (error) throw error;
-
-        if (data && data.length > 0) {
-            ctx.reply(`لديك ${data.length} عقود نشطة حالياً.`);
-        } else {
-            ctx.reply('لا توجد عقود نشطة في حسابك حالياً.');
-        }
+        ctx.reply(data && data.length > 0 ? `لديك ${data.length} عقود نشطة حالياً.` : 'لا توجد عقود نشطة في حسابك حالياً.');
     } catch (err) {
         console.error("خطأ في جلب بيانات العقود:", err);
-        ctx.reply('عذراً، لم نتمكن من جلب حالة عقودك حالياً.');
     }
 });
 
-// تشغيل البوت
-bot.launch()
-    .then(() => console.log('Bot is running successfully!'))
-    .catch((err) => console.error('Failed to launch bot:', err));
+bot.launch().then(() => console.log('Bot is running successfully!'));
