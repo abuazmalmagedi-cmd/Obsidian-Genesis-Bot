@@ -14,9 +14,9 @@ const taskLinks = {
 // 1. معالج رسالة البداية
 bot.start((ctx) => {
     ctx.reply('مرحباً بك في Obsidian Genesis! اختر مهمة من القائمة أدناه:', Markup.inlineKeyboard([
-        [Markup.button.callback('📢 انضمام للمجموعة', 'task_group')],
-        [Markup.button.callback('🐦 متابعة X', 'task_follow')],
-        [Markup.button.callback('👥 نظام الإحالات', 'task_referral')]
+        [Markup.button.callback('📢 انضمام للمجموعة', https://t.me/OBSD_Vault)],
+        [Markup.button.callback('🐦 https:'https://x.com/ObsdVault')],
+        [Markup.button.callback('👥 نظام الإحالات 'https://t.me/share/url?url=https://t.me/YourBotUsername')]
     ]));
 });
 
