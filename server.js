@@ -4,59 +4,50 @@ const { Telegraf, Markup } = require('telegraf');
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
-const taskLinks = {
-    'task_group': 'https://t.me/OBSD_Vault',
-    'task_follow': 'https://x.com/ObsdVault',
-    'task_referral': 'https://t.me/share/url?url=https://t.me/YourBotUsername'
-};
+// البيانات الأساسية
+const CONTRACT_ADDRESS = "0x2a2c206ac686edd7d5b8cf1cf325de5261cd446f";
+const QUICKSWAP_LINK = `https://quickswap.exchange/#/swap?outputCurrency=${CONTRACT_ADDRESS}`;
+const MARKETING_TEXT = "انضم إلى بوت تعدين أوبيسيديان البسيط وحقق أكثر من 700 دولار شهرياً!";
 
-// 1. معالج رسالة البداية (تصحيح الروابط)
-bot.start((ctx) => {
-    ctx.reply('مرحباً بك في Obsidian Genesis! اختر مهمة من القائمة أدناه:', Markup.inlineKeyboard([
-        [Markup.button.url('📢 انضمام للمجموعة', taskLinks['task_group'])],
-        [Markup.button.url('🐦 متابعة X', taskLinks['task_follow'])],
-        [Markup.button.url('👥 نظام الإحالات', taskLinks['task_referral'])]
+// معالج البداية مع دمج النص التسويقي
+bot.start(async (ctx) => {
+    await ctx.reply(MARKETING_TEXT);
+    await ctx.reply("اختر من القائمة:", Markup.inlineKeyboard([
+        [Markup.button.callback('⛏️ بدء التعدين', 'start_mining')],
+        [Markup.button.url('🛒 شراء OBSD من QuickSwap', QUICKSWAP_LINK)]
     ]));
 });
 
-// 2. معالج المهام (يعمل في الخلفية عند الحاجة)
-bot.action(/task_/, async (ctx) => {
-    try {
-        const taskType = ctx.match[0];
-        const telegram_id = ctx.from.id;
+// معالج المهام المتقدم
+bot.action('start_mining', async (ctx) => {
+    // 1. تسجيل حالة البدء
+    await supabase.from('mining_actions').insert({ telegram_id: ctx.from.id, status: 'mining' });
+    
+    await ctx.reply("بدأ التعدين.. انتظر ساعة لتحصل على 0.20$");
+    
+    // محاكاة انتهاء الساعة
+    setTimeout(async () => {
+        await ctx.reply("✅ انتهى التعدين! رصيدك 0.20$. أكمل المهام الإجبارية:", Markup.inlineKeyboard([
+            [Markup.button.url('📢 المجموعة', 'https://t.me/OBSD_Vault')],
+            [Markup.button.url('🐦 متابعة X', 'https://x.com/ObsdVault')],
+            [Markup.button.callback('✅ التحقق من المهام', 'verify_tasks')]
+        ]));
+    }, 5000); // للتجربة فقط، عدلها لـ 3600000 (ساعة)
+});
 
-        // تسجيل البيانات في Supabase
-        await supabase.from('users').upsert({ 
-            telegram_id: telegram_id,
-            is_registered: true 
-        }, { onConflict: 'telegram_id' });
+// معالج التحقق من المهام في Supabase
+bot.action('verify_tasks', async (ctx) => {
+    const { data } = await supabase
+        .from('tasks')
+        .select('*')
+        .eq('telegram_id', ctx.from.id)
+        .eq('is_completed', true);
 
-        await supabase.from('mining_actions').insert({
-            telegram_id: telegram_id,
-            action_type: `TASK_${taskType.toUpperCase()}`,
-            reward_amount: 0.5 
-        });
-
-        await ctx.answerCbQuery('تم تسجيل محاولتك!');
-    } catch (err) {
-        console.error("خطأ في تنفيذ المهمة:", err);
+    if (data && data.length >= 2) {
+        await ctx.reply("ممتاز! أنت الآن مؤهل للمضاعفة. اشترِ ما قيمته 3$ واحتفظ بها لـ 24 ساعة.");
+    } else {
+        await ctx.reply("لم تكمل جميع المهام الإجبارية بعد.");
     }
 });
 
-// 3. معالج حالة العقود
-bot.command('status', async (ctx) => {
-    try {
-        const { data, error } = await supabase
-            .from('contracts')
-            .select('*')
-            .eq('telegram_id', ctx.from.id)
-            .eq('is_active', true);
-            
-        if (error) throw error;
-        ctx.reply(data && data.length > 0 ? `لديك ${data.length} عقود نشطة حالياً.` : 'لا توجد عقود نشطة في حسابك حالياً.');
-    } catch (err) {
-        console.error("خطأ في جلب بيانات العقود:", err);
-    }
-});
-
-bot.launch().then(() => console.log('Bot is running successfully!'));
+bot.launch().then(() => console.log('Bot is running...'));
