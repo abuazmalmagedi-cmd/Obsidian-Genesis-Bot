@@ -1,8 +1,7 @@
 const { createClient } = require('@supabase/supabase-js');
 const { Telegraf, Markup } = require('telegraf');
 
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
-const bot = new Telegraf(process.env.BOT_TOKEN);
+const supabase = createClient(process.env.SUPABASE_URL,const bot = new Telegraf('YOUR_TOKEN_HERE'
 
 const taskLinks = {
     'task_group': 'https://t.me/OBSD_Vault',
