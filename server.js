@@ -54,3 +54,9 @@ bot.action(/task_/, async (ctx) => {
 
 // تشغيل البوت
 bot.launch().then(() => console.log('Bot is running...'));
+const { createClient } = require('@supabase/supabase-js');
+const { Telegraf, Markup } = require('telegraf');
+
+// تأكد من استخدام process.env لقراءة المتغيرات من إعدادات Render
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
+const bot = new Telegraf(process.env.BOT_TOKEN);
